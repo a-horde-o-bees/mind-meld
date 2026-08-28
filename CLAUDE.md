@@ -17,3 +17,5 @@ This repo is public. Personal values stay out of every committed file — the me
 ## Branches and deploys
 
 Work lands on `dev` (directly, or via feature branches merged into it), which deploys `mind-meld-dev` on push. Releasing is a pull request from `dev` into `main`, which is protected — direct pushes are rejected, CI must be green — and deploys `mind-meld-prod`. Each Worker has its own Durable Objects, D1 database and secrets; nothing is shared between environments.
+
+**Merging to `main` is the user's call alone.** Keep the release PR from `dev` open and current, but never merge it or arm auto-merge on it without the user directing a release in this session — green CI qualifies a release, it never triggers one.
