@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Mind Meld">
+  <rect width="512" height="512" rx="96" fill="#12141a"/>
+  <g fill="none" stroke="#5b8cff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 132h120"/>
+    <path d="M150 132v248"/>
+    <path d="M150 214h96"/>
+    <path d="M150 296h96"/>
+  </g>
+  <g fill="#7ee0a8">
+    <circle cx="316" cy="132" r="26"/>
+    <circle cx="316" cy="214" r="26"/>
+  </g>
+  <g fill="#f2c14e">
+    <circle cx="316" cy="296" r="26"/>
+    <circle cx="316" cy="380" r="26"/>
+  </g>
+  <path d="M150 380h120" fill="none" stroke="#5b8cff" stroke-width="26" stroke-linecap="round"/>
+</svg>

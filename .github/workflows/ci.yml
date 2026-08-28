@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build client
+        run: npm run build
+
+      # Catches a broken wrangler.toml or a Worker that fails to bundle, without
+      # needing credentials. Both environments, so a config edit that only
+      # breaks production cannot slip through a green check.
+      - name: Validate the Worker bundle (dev)
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run-dev
+        working-directory: packages/worker
+
+      - name: Validate the Worker bundle (production)
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run-prod --env production
+        working-directory: packages/worker

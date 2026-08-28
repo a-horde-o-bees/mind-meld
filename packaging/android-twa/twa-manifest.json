@@ -1,0 +1,39 @@
+{
+  "packageId": "com.example.mindmeld",
+  "host": "planner.example.com",
+  "name": "Mind Meld",
+  "launcherName": "Planner",
+  "display": "standalone",
+  "themeColor": "#12141A",
+  "themeColorDark": "#12141A",
+  "navigationColor": "#12141A",
+  "navigationColorDark": "#12141A",
+  "navigationDividerColor": "#12141A",
+  "navigationDividerColorDark": "#12141A",
+  "backgroundColor": "#12141A",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://planner.example.com/icons/icon-512.png",
+  "maskableIconUrl": "https://planner.example.com/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://planner.example.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://planner.example.com/",
+  "minSdkVersion": 23,
+  "orientation": "default"
+}

@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.wrangler/
+data/
+*.log
+.DS_Store
+.env
+.env.local
+coverage/
+
+# Local secrets for `wrangler dev`. Use .dev.vars.example as the template.
+.dev.vars
+
+# Android signing key produced by Bubblewrap. Losing it means the Play listing
+# can never be updated, so back it up outside the repo.
+packaging/android-twa/*.keystore
+packaging/android-twa/android/
+
+# Playwright MCP snapshots written during browser-driven verification.
+.playwright-mcp/

@@ -1,0 +1,101 @@
+# Cloudflare deploy config for Mind Meld.
+#
+# One Worker owns everything at a single origin: the static client (via
+# [assets]), the auth endpoints, and the Yjs sync sockets. Same-origin means the
+# session cookie is sent on the websocket upgrade with no CORS work.
+#
+# Two Workers, one config:
+#   mind-meld-dev  (top level)       — every branch push deploys here via
+#     Workers Builds; last push wins. Also what `wrangler dev` runs locally.
+#   mind-meld-prod ([env.production]) — deploys only from main, via
+#     `wrangler deploy --env production`.
+# Each Worker has its own Durable Objects, D1 database and secrets — dev and
+# prod state never mix. Bindings are not inherited by environments, so
+# everything is repeated under [env.production].
+
+name = "mind-meld-dev"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# One Durable Object instance per document (room names like `note_a1b2c3`).
+# partyserver routes /parties/doc-room/<room> to the binding below.
+[[durable_objects.bindings]]
+name = "DocRoom"
+class_name = "DocRoom"
+
+# SQLite-backed Durable Objects are available on the Workers Free plan; the
+# older key-value storage backend is paid-only.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocRoom"]
+
+# Better Auth's user, session, account and verification tables.
+[[d1_databases]]
+binding = "DB"
+database_name = "mind-meld-dev"
+database_id = "f3b0ff64-c9d9-4744-80a5-415f3164994b"
+migrations_dir = "migrations"
+
+# Built client. Files that exist are served directly; anything else falls
+# through to index.html so client-side routing works. `run_worker_first` keeps
+# the API and sync paths away from the SPA fallback.
+[assets]
+directory = "../client/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/parties/*", "/.well-known/*"]
+
+[vars]
+# Public origin of the deployment. Used for OAuth callbacks and email links.
+APP_URL = "https://mind-meld-dev.a-horde-o-bees.workers.dev"
+# Who is allowed to hold an account: set MIND_MELD_ALLOWED_DOMAINS and/or
+# MIND_MELD_ALLOWED_EMAILS as per-Worker secrets (`wrangler secret put`), which
+# keeps personal addresses out of this public file. With neither set the Worker
+# refuses every signup unless MIND_MELD_ALLOW_ANY_SIGNUP=1 says otherwise.
+MIND_MELD_ALLOW_ANY_SIGNUP = "0"
+MAIL_FROM = "Mind Meld <onboarding@resend.dev>"
+# Android TWA: package name and signing-key SHA-256 fingerprints (comma
+# separated) published at /.well-known/assetlinks.json. Empty disables the route.
+ANDROID_PACKAGE = ""
+ANDROID_FINGERPRINTS = ""
+
+# Secrets (set per Worker with `wrangler secret put NAME` and
+# `wrangler secret put NAME --env production`, never committed):
+#   BETTER_AUTH_SECRET   - random 32+ byte string signing sessions
+#   GOOGLE_CLIENT_ID     - Google Cloud OAuth web client
+#   GOOGLE_CLIENT_SECRET
+#   RESEND_API_KEY       - omit to log emails instead of sending them
+
+# ── Production ──────────────────────────────────────────────────────────────
+# Bindings are not inherited by environments — everything is repeated here.
+
+[env.production]
+name = "mind-meld-prod"
+
+[[env.production.durable_objects.bindings]]
+name = "DocRoom"
+class_name = "DocRoom"
+
+[[env.production.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocRoom"]
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mind-meld-prod"
+database_id = "31465ec0-7d0b-4fab-84ef-caefc55f1d5a"
+migrations_dir = "migrations"
+
+[env.production.assets]
+directory = "../client/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/parties/*", "/.well-known/*"]
+
+[env.production.vars]
+APP_URL = "https://mind-meld-prod.a-horde-o-bees.workers.dev"
+MIND_MELD_ALLOW_ANY_SIGNUP = "0"
+MAIL_FROM = "Mind Meld <onboarding@resend.dev>"
+ANDROID_PACKAGE = ""
+ANDROID_FINGERPRINTS = ""

@@ -1,0 +1,27 @@
+# Copy to .dev.vars for local development with `wrangler dev`.
+# In production these are set with `wrangler secret put NAME` instead.
+
+# Signs session cookies. Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=change-me
+
+# Who may hold an account. Set at least one, or MIND_MELD_ALLOW_ANY_SIGNUP=1.
+MIND_MELD_ALLOWED_DOMAINS=example.com
+# MIND_MELD_ALLOWED_EMAILS=ana@example.com,ben@example.com
+
+# Public origin. Must match the Google OAuth client's authorised origin.
+APP_URL=http://localhost:8787
+
+# Google Cloud OAuth 2.0 "Web application" client. Optional locally: without
+# these the Google button is hidden and email/password still works.
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+
+# Resend API key. Without it, verification and reset emails are logged to the
+# console instead of being sent, which is usually what you want locally.
+# RESEND_API_KEY=
+
+# Extra trusted origins for local development (the Vite dev server).
+MIND_MELD_EXTRA_ORIGINS=http://localhost:5173
+
+# How often live sockets re-check their session, in ms (default 5 minutes).
+# MIND_MELD_SESSION_RECHECK_MS=300000

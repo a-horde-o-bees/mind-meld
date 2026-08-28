@@ -1,0 +1,29 @@
+{
+  "name": "mind-meld",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Real-time collaborative team space for notes, task lists and tree-organized tabular data, built on Yjs and Cloudflare Durable Objects",
+  "workspaces": [
+    "packages/client",
+    "packages/worker"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @mind-meld/worker",
+    "dev:client": "npm run dev -w @mind-meld/client",
+    "build": "npm run build -w @mind-meld/client",
+    "deploy": "npm run build && npm run deploy -w @mind-meld/worker",
+    "deploy:prod": "npm run build && npm run deploy:prod -w @mind-meld/worker",
+    "db:generate": "npm run db:generate -w @mind-meld/worker",
+    "db:migrate:local": "npm run db:migrate:local -w @mind-meld/worker",
+    "db:migrate:remote": "npm run db:migrate:remote -w @mind-meld/worker",
+    "db:migrate:prod": "npm run db:migrate:prod -w @mind-meld/worker",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
