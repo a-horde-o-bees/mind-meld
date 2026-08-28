@@ -8,7 +8,8 @@ README.md's "Deploy your own" section is the replication contract: a stranger �
 
 - A change touching configuration, environment variables, provisioning, secrets, or the pipeline updates the recipe in the same change.
 - The Workers Builds settings exist only as dashboard state; the README's settings table is their single written home.
-- Two mechanisms enforce the contract: the worker suite fails on an `Env` field documented in neither `wrangler.toml` nor `.dev.vars.example`, and CI dry-runs both environments' deploys. A failure there is a documentation bug — fix the docs, not the test.
+- The worker suite fails on an `Env` field documented in neither `wrangler.toml` nor `.dev.vars.example`; that failure means document the field, never relax the test.
+- CI dry-runs the deploy of both environments, because `[env.production]` duplicates every binding and can break independently while the live dev worker looks fine — the dry-run surfaces a broken production declaration at commit time instead of at release.
 
 ## Public repo, no personal data
 
