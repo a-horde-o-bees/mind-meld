@@ -63,10 +63,10 @@ describe('config parsing', () => {
 describe('configuration contract', () => {
   // Replicability guard: a variable the Worker reads but no template mentions
   // is one a fresh clone can only discover by reading source. Every field of
-  // Env must be named in wrangler.toml or .dev.vars.example.
-  it('documents every Env field in wrangler.toml or .dev.vars.example', () => {
+  // Env must be named in wrangler.toml or .env.example.
+  it('documents every Env field in wrangler.toml or .env.example', () => {
     const read = (file: string) => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
-    const documented = read('wrangler.toml') + read('.dev.vars.example')
+    const documented = read('wrangler.toml') + read('.env.example')
     const fields = [...read('src/env.ts').matchAll(/^ {2}(\w+)\??:/gm)].map((match) => match[1]!)
     expect(fields.length).toBeGreaterThan(0)
     const undocumented = fields.filter((field) => !documented.includes(field))

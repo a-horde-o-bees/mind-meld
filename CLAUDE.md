@@ -8,13 +8,18 @@ README.md's "Deploy your own" section is the replication contract: a stranger �
 
 - A change touching configuration, environment variables, provisioning, secrets, or the pipeline updates the recipe in the same change.
 - The Workers Builds settings exist only as dashboard state; the README's settings table is their single written home.
-- The worker suite fails on an `Env` field documented in neither `wrangler.toml` nor `.dev.vars.example`; that failure means document the field, never relax the test.
-- CI dry-runs the deploy of both environments, because `[env.production]` duplicates every binding and can break independently while the live dev worker looks fine — the dry-run surfaces a broken production declaration at commit time instead of at release.
+- The worker suite fails on an `Env` field documented in neither `wrangler.toml` nor `.env.example`; that failure means document the field, never relax the test.
+- CI dry-runs the deploy of every environment, because each `[env.<name>]` block repeats every binding and can break on its own while another environment looks fine — the dry-run surfaces a broken declaration at commit time instead of at release.
+- Every wrangler command names its environment with `--env`; the config's top level is deliberately not deployable, so a forgotten flag lands on a visibly wrong Worker instead of silently on dev.
+
+## The architecture doc is the current state
+
+`docs/ARCHITECTURE.md` describes the system as built and changes with the code: a change that alters how the system works updates it in the same change. `docs/superpowers/specs/` holds dated decision records that are never edited to match later reality, so nothing points a reader there for current truth.
 
 ## Public repo, no personal data
 
-Personal values stay out of every committed file: the membership allowlist rides in per-Worker secrets, and commits use the repo-local noreply identity.
+Personal values stay out of every committed file: the membership allowlist rides in per-Worker secrets, and commits carry a GitHub noreply identity, which comes from global git config rather than anything in this repo.
 
 ## Environments
 
-`dev` deploys `mind-meld-dev` on push; protected `main` deploys `mind-meld-prod`. Merging `dev` into `main` is a production release, done only at the user's directive. Each Worker has its own Durable Objects, D1 database and secrets — nothing is shared between environments.
+`dev` is the default branch: pull requests land there, and it deploys `mind-meld-dev` on push. Protected `main` deploys `mind-meld-prod` and receives only releases — `dev` merged in with a merge commit, only at the user's directive — so `dev` stays an ancestor of `main` and nothing is ever rebased. A hotfix merged straight to `main` is merged back into `dev` at once. Each Worker has its own Durable Objects, D1 database and secrets — nothing is shared between environments.
