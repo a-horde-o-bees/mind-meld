@@ -4,98 +4,109 @@
 # [assets]), the auth endpoints, and the Yjs sync sockets. Same-origin means the
 # session cookie is sent on the websocket upgrade with no CORS work.
 #
-# Two Workers, one config:
-#   mind-meld-dev  (top level)       — every branch push deploys here via
-#     Workers Builds; last push wins. Also what `wrangler dev` runs locally.
-#   mind-meld-prod ([env.production]) — deploys only from main, via
-#     `wrangler deploy --env production`.
-# Each Worker has its own Durable Objects, D1 database and secrets — dev and
-# prod state never mix. Bindings are not inherited by environments, so
-# everything is repeated under [env.production].
+# Every deployable environment is a named [env.<name>] block, selected with
+# `--env <name>` on every wrangler command. Bindings and vars are not inherited
+# by environments, so each block repeats the full set; the top level holds only
+# what every environment shares. Two environments ship here:
+#   [env.dev]  → Worker mind-meld-dev,  deployed from the `dev` branch
+#   [env.prod] → Worker mind-meld-prod, deployed from `main`
+# Each has its own Durable Objects, D1 database and secrets — state never mixes.
+# Adding an environment is copying a block and giving it its own database.
+#
+# The values marked `# yours` are this deployment's; a clone replaces them and
+# keeps everything else. Secrets are never here (see below).
 
-name = "mind-meld-dev"
+# Deliberately not a real environment: a command that forgets `--env` targets
+# this name and gets a Worker with no bindings, so the mistake is visible
+# rather than silently landing on dev.
+name = "mind-meld-no-env"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Secrets (set per environment with `wrangler secret put NAME --env <env>`,
+# never committed):
+#   BETTER_AUTH_SECRET   - random 32+ byte string signing sessions
+#   MIND_MELD_ALLOWED_DOMAINS / MIND_MELD_ALLOWED_EMAILS - who may hold an
+#                          account; secrets so personal addresses stay out of
+#                          this public file. With neither set the Worker refuses
+#                          every signup unless MIND_MELD_ALLOW_ANY_SIGNUP=1.
+#   GOOGLE_CLIENT_ID     - Google Cloud OAuth web client (optional)
+#   GOOGLE_CLIENT_SECRET
+#   RESEND_API_KEY       - omit to log emails instead of sending them
+
+# ── dev ─────────────────────────────────────────────────────────────────────
+
+[env.dev]
+name = "mind-meld-dev"
+
 # One Durable Object instance per document (room names like `note_a1b2c3`).
 # partyserver routes /parties/doc-room/<room> to the binding below.
-[[durable_objects.bindings]]
+[[env.dev.durable_objects.bindings]]
 name = "DocRoom"
 class_name = "DocRoom"
 
 # SQLite-backed Durable Objects are available on the Workers Free plan; the
 # older key-value storage backend is paid-only.
-[[migrations]]
+[[env.dev.migrations]]
 tag = "v1"
 new_sqlite_classes = ["DocRoom"]
 
 # Better Auth's user, session, account and verification tables.
-[[d1_databases]]
+[[env.dev.d1_databases]]
 binding = "DB"
 database_name = "mind-meld-dev"
-database_id = "f3b0ff64-c9d9-4744-80a5-415f3164994b"
+database_id = "f3b0ff64-c9d9-4744-80a5-415f3164994b" # yours
 migrations_dir = "migrations"
 
 # Built client. Files that exist are served directly; anything else falls
 # through to index.html so client-side routing works. `run_worker_first` keeps
 # the API and sync paths away from the SPA fallback.
-[assets]
+[env.dev.assets]
 directory = "../client/dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*", "/parties/*", "/.well-known/*"]
 
-[vars]
+[env.dev.vars]
 # Public origin of the deployment. Used for OAuth callbacks and email links.
-APP_URL = "https://mind-meld-dev.a-horde-o-bees.workers.dev"
-# Who is allowed to hold an account: set MIND_MELD_ALLOWED_DOMAINS and/or
-# MIND_MELD_ALLOWED_EMAILS as per-Worker secrets (`wrangler secret put`), which
-# keeps personal addresses out of this public file. With neither set the Worker
-# refuses every signup unless MIND_MELD_ALLOW_ANY_SIGNUP=1 says otherwise.
+APP_URL = "https://mind-meld-dev.a-horde-o-bees.workers.dev" # yours
 MIND_MELD_ALLOW_ANY_SIGNUP = "0"
-MAIL_FROM = "Mind Meld <onboarding@resend.dev>"
+MAIL_FROM = "Mind Meld <onboarding@resend.dev>" # yours
 # Android TWA: package name and signing-key SHA-256 fingerprints (comma
 # separated) published at /.well-known/assetlinks.json. Empty disables the route.
 ANDROID_PACKAGE = ""
 ANDROID_FINGERPRINTS = ""
 
-# Secrets (set per Worker with `wrangler secret put NAME` and
-# `wrangler secret put NAME --env production`, never committed):
-#   BETTER_AUTH_SECRET   - random 32+ byte string signing sessions
-#   GOOGLE_CLIENT_ID     - Google Cloud OAuth web client
-#   GOOGLE_CLIENT_SECRET
-#   RESEND_API_KEY       - omit to log emails instead of sending them
+# ── prod ────────────────────────────────────────────────────────────────────
+# Same shape as dev; only the name, database and public origin differ.
 
-# ── Production ──────────────────────────────────────────────────────────────
-# Bindings are not inherited by environments — everything is repeated here.
-
-[env.production]
+[env.prod]
 name = "mind-meld-prod"
 
-[[env.production.durable_objects.bindings]]
+[[env.prod.durable_objects.bindings]]
 name = "DocRoom"
 class_name = "DocRoom"
 
-[[env.production.migrations]]
+[[env.prod.migrations]]
 tag = "v1"
 new_sqlite_classes = ["DocRoom"]
 
-[[env.production.d1_databases]]
+[[env.prod.d1_databases]]
 binding = "DB"
 database_name = "mind-meld-prod"
-database_id = "31465ec0-7d0b-4fab-84ef-caefc55f1d5a"
+database_id = "31465ec0-7d0b-4fab-84ef-caefc55f1d5a" # yours
 migrations_dir = "migrations"
 
-[env.production.assets]
+[env.prod.assets]
 directory = "../client/dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*", "/parties/*", "/.well-known/*"]
 
-[env.production.vars]
-APP_URL = "https://mind-meld-prod.a-horde-o-bees.workers.dev"
+[env.prod.vars]
+APP_URL = "https://mind-meld-prod.a-horde-o-bees.workers.dev" # yours
 MIND_MELD_ALLOW_ANY_SIGNUP = "0"
-MAIL_FROM = "Mind Meld <onboarding@resend.dev>"
+MAIL_FROM = "Mind Meld <onboarding@resend.dev>" # yours
 ANDROID_PACKAGE = ""
 ANDROID_FINGERPRINTS = ""

@@ -29,7 +29,7 @@ Everything below follows from those four requirements plus the decisions taken w
 | Sessions | 60-day sliding, revocable | "Stay logged in" was wanted, and long sessions are only safe if they can be revoked |
 | Email | Resend HTTP API | Forced: Cloudflare sells no outbound email and Workers cannot speak SMTP |
 | CI/CD | Cloudflare Workers Builds, one connection per Worker | The test gate lives in the build command, so a red typecheck or test still never deploys — and no Cloudflare token has to be mirrored into GitHub. Supersedes GitHub Actions `wrangler deploy`, which needed exactly that mirror |
-| Environments | Two Workers from one `wrangler.toml`: `mind-meld-dev` (top level, deployed from the `dev` branch) and `mind-meld-prod` (`[env.production]`, deployed from `main`, which is protected and merged into by pull request) | Live users are isolated from development; feature branches deploy nowhere until merged, and a careless merge cannot reach `main` by direct push or with failing checks. Supersedes the original single instance, which conflated the two |
+| Environments | Two Workers from one `wrangler.toml`, each a named block selected with `--env`: `mind-meld-dev` (`[env.dev]`, deployed from the `dev` branch) and `mind-meld-prod` (`[env.prod]`, deployed from `main`, which is protected and merged into by pull request). The top level is not deployable, so a forgotten `--env` lands on a visibly wrong Worker | Live users are isolated from development; feature branches deploy nowhere until merged, and a careless merge cannot reach `main` by direct push or with failing checks. Supersedes the original single instance, which conflated the two |
 
 ## Architecture
 

@@ -4,12 +4,13 @@ dist/
 data/
 *.log
 .DS_Store
-.env
-.env.local
 coverage/
 
-# Local secrets for `wrangler dev`. Use .dev.vars.example as the template.
-.dev.vars
+# Local secrets for `wrangler dev`. Use .env.example as the template. A stray
+# .dev.vars would silently take precedence over .env, so it is ignored too.
+.env*
+!.env.example
+.dev.vars*
 
 # Android signing key produced by Bubblewrap. Losing it means the Play listing
 # can never be updated, so back it up outside the repo.

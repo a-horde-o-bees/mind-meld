@@ -33,12 +33,12 @@ jobs:
         run: npm run build
 
       # Catches a broken wrangler.toml or a Worker that fails to bundle, without
-      # needing credentials. Both environments, so a config edit that only
-      # breaks production cannot slip through a green check.
+      # needing credentials. Every environment, so a config edit that only
+      # breaks one of them cannot slip through a green check.
       - name: Validate the Worker bundle (dev)
-        run: npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run-dev
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run-dev --env dev
         working-directory: packages/worker
 
-      - name: Validate the Worker bundle (production)
-        run: npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run-prod --env production
+      - name: Validate the Worker bundle (prod)
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run-prod --env prod
         working-directory: packages/worker
