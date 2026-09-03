@@ -14,9 +14,14 @@ export function useOriginStatus(): OriginStatus {
 
   useEffect(() => {
     let cancelled = false
+    let latest = 0
     const probe = () => {
+      // Only the newest probe may set the status. A boot probe still in flight
+      // when the browser reconnects would otherwise land after the reconnect
+      // probe and overwrite what it found — putting the ghost app back.
+      const token = ++latest
       void probeServer().then((result) => {
-        if (!cancelled) setStatus(result.status)
+        if (!cancelled && token === latest) setStatus(result.status)
       })
     }
     probe()
