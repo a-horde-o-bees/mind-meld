@@ -181,6 +181,8 @@ button:focus-visible {
   padding: 2rem 1.25rem;
   text-align: left;
   gap: 0.75rem;
+  align-content: start;
+  overflow-y: auto;
 }
 
 .defunct__title {
@@ -193,7 +195,7 @@ button:focus-visible {
 }
 
 .defunct__error {
-  color: var(--danger, #b42318);
+  color: var(--danger);
   margin: 0;
 }
 

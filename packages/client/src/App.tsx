@@ -16,13 +16,13 @@ import { useRoute } from './lib/router'
 import type { Person, WorkspaceItem } from './lib/types'
 
 export function App() {
-  const origin = useOriginStatus()
+  const originStatus = useOriginStatus()
   const { data: session, isPending } = useSession()
 
   // A cached copy whose origin no longer serves the app says so instead of
   // pretending. `pending` and `offline` change nothing: offline-first is a
   // feature, and the probe never delays the boot.
-  if (origin === 'defunct') return <DefunctOrigin origin={window.location.origin} />
+  if (originStatus === 'defunct') return <DefunctOrigin origin={window.location.origin} />
 
   if (isPending) {
     return (
