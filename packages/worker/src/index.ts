@@ -1,5 +1,5 @@
 import { routePartykitRequest } from 'partyserver'
-import { getAuth, getSessionUser, googleConfigured } from './auth'
+import { getAuth, getSessionUser, serverConfig } from './auth'
 import { listVar, type Env } from './env'
 import { USER_HEADERS } from './room'
 import { isValidRoom } from './routing'
@@ -25,10 +25,10 @@ export default {
     }
 
     // Which optional sign-in methods are live, so the client only renders
-    // buttons the server will honour. Public by design: it holds booleans,
-    // never credentials.
+    // buttons the server will honour, plus an identity a cached client checks
+    // at boot. Public by design: it holds booleans, never credentials.
     if (url.pathname === '/api/config') {
-      return json({ providers: { google: googleConfigured(env) } })
+      return json(serverConfig(env))
     }
 
     if (url.pathname === '/api/me') {

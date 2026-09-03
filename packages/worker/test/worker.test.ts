@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
-import { googleConfigured } from '../src/auth'
+import { googleConfigured, serverConfig } from '../src/auth'
 import { assertAllowed } from '../src/membership'
 import { isTruthy, listVar, type Env } from '../src/env'
 import { isValidRoom } from '../src/routing'
@@ -84,6 +84,16 @@ describe('google provider detection', () => {
     expect(googleConfigured(env())).toBe(false)
     // An empty string is unset, not configured.
     expect(googleConfigured(env({ GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '' }))).toBe(false)
+  })
+})
+
+describe('server config', () => {
+  it('identifies the app so a cached client can tell a live origin from a dead one', () => {
+    expect(serverConfig(env())).toEqual({ app: 'mind-meld', providers: { google: false } })
+    expect(
+      serverConfig(env({ GOOGLE_CLIENT_ID: 'id', GOOGLE_CLIENT_SECRET: 'secret' })).providers
+        .google,
+    ).toBe(true)
   })
 })
 

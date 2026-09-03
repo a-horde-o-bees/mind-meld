@@ -38,6 +38,18 @@ export function googleConfigured(env: Env): boolean {
   return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
 }
 
+/**
+ * Body of `GET /api/config`. `app` is a positive identity: a client served from
+ * cache on an origin that no longer runs Mind Meld gets some other answer here
+ * (Cloudflare's "worker not found" page, a stranger's Worker) and can tell.
+ */
+export function serverConfig(env: Env): {
+  app: 'mind-meld'
+  providers: { google: boolean }
+} {
+  return { app: 'mind-meld', providers: { google: googleConfigured(env) } }
+}
+
 function build(env: Env) {
   const google = googleConfigured(env)
     ? {
