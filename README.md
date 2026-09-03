@@ -108,13 +108,16 @@ npm run deploy:dev
 
 The URL now serves the app, with signups limited to your allowlist.
 
-**5. Connect the pipeline.** In the Cloudflare dashboard: Workers & Pages → `mind-meld-dev` → Settings → Builds → Connect, choose your repo, then set:
+**5. Connect the pipeline.** In the Cloudflare dashboard: Workers & Pages → `mind-meld-dev` → Settings → Build → Connect. The first time, GitHub asks you to install the Cloudflare Workers and Pages app; grant it this repository only. If the app is already installed for other repositories, add this one under GitHub → Settings → Applications → the app → Configure → Repository access, and reopen the Connect dialog. Then set:
 
-- Branch: `dev`
+- Git branch: `dev`
 - Root directory: `/`
 - Build command: `npm ci && npm run typecheck && npm test && npm run build`
 - Deploy command: `cd packages/worker && npx wrangler d1 migrations apply mind-meld-dev --remote --env dev && npx wrangler deploy --env dev`
-- Branch control → Builds for non-production branches: off. Feature branches get CI on GitHub and deploy nowhere; the default non-production command names no environment and would fail anyway.
+- Enable Preview builds: off. Feature branches get CI on GitHub and deploy nowhere; the default preview command names no environment and would fail anyway.
+- API token and build variables: leave as offered. Cloudflare mints the token itself, and the Worker's runtime secrets are already set.
+
+The first build runs on the next push to the branch; there is no button to start one.
 
 From here every push to `dev` deploys. Cloudflare builds inside the platform, so no API token is ever copied anywhere; a red typecheck or test fails the build and never deploys; and migrations run before the code that expects them.
 

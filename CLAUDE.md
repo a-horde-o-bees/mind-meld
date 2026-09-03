@@ -12,6 +12,10 @@ README.md's "Deploy your own" section is the replication contract: a stranger â€
 - CI dry-runs the deploy of every environment, because each `[env.<name>]` block repeats every binding and can break on its own while another environment looks fine â€” the dry-run surfaces a broken declaration at commit time instead of at release.
 - Every wrangler command names its environment with `--env`; the config's top level is deliberately not deployable, so a forgotten flag lands on a visibly wrong Worker instead of silently on dev.
 
+## Every change starts with a spec
+
+Every change to this repo's contents, whatever its size, takes the brainstorming skill's architectural path before anything is implemented; a change that looks bounded is not exempt.
+
 ## The architecture doc is the current state
 
 `docs/ARCHITECTURE.md` describes the system as built and changes with the code: a change that alters how the system works updates it in the same change. `docs/superpowers/specs/` holds dated decision records that are never edited to match later reality, so nothing points a reader there for current truth.
