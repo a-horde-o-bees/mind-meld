@@ -5,6 +5,7 @@ import { usePresence } from './collab/presence'
 import { seedTable } from './collab/table'
 import { getItem, itemsMap, TYPE_LABELS } from './collab/workspace'
 import { AuthScreens } from './components/AuthScreens'
+import { DefunctOrigin, useOriginStatus } from './components/DefunctOrigin'
 import { NoteView } from './components/NoteView'
 import { Sidebar } from './components/Sidebar'
 import { TableView } from './components/TableView'
@@ -15,7 +16,13 @@ import { useRoute } from './lib/router'
 import type { Person, WorkspaceItem } from './lib/types'
 
 export function App() {
+  const origin = useOriginStatus()
   const { data: session, isPending } = useSession()
+
+  // A cached copy whose origin no longer serves the app says so instead of
+  // pretending. `pending` and `offline` change nothing: offline-first is a
+  // feature, and the probe never delays the boot.
+  if (origin === 'defunct') return <DefunctOrigin origin={window.location.origin} />
 
   if (isPending) {
     return (
