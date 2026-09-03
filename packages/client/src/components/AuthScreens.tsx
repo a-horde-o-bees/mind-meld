@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { authClient, signIn, signInWithGoogle, signUp } from '../lib/auth-client'
-import { fetchServerConfig } from '../lib/server-config'
+import { probeServer } from '../lib/server-config'
 
 type Mode = 'sign-in' | 'sign-up' | 'forgot'
 
@@ -24,8 +24,8 @@ export function AuthScreens() {
 
   useEffect(() => {
     let cancelled = false
-    void fetchServerConfig().then((config) => {
-      if (!cancelled) setGoogleAvailable(config.providers.google)
+    void probeServer().then((probe) => {
+      if (!cancelled && probe.status === 'ok') setGoogleAvailable(probe.config.providers.google)
     })
     return () => {
       cancelled = true

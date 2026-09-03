@@ -1,27 +1,49 @@
 /**
- * What optional features the deployed worker actually has configured, so the
- * UI only offers what the server will accept (`/api/config` on the worker is
- * the source). Every failure mode collapses to "not configured": a dead
- * sign-in button is worse than a missing one, and email/password never
- * depends on this call.
+ * Whether the origin this copy of the app was served from still runs Mind
+ * Meld, and what optional features it has configured (`/api/config` on the
+ * worker is the source).
+ *
+ * The app is a PWA served offline-first, so a copy cached on a device keeps
+ * rendering after its Worker is deleted or renamed — a ghost that looks alive
+ * until sign-in fails. The probe tells three situations apart:
+ *
+ * - `ok`: the server answered and identified itself as Mind Meld.
+ * - `offline`: the request failed, or our origin answered 5xx. Both keep the
+ *   app working from local data; a sick origin is not a dead one.
+ * - `defunct`: some server answered, and it is not Mind Meld — Cloudflare's
+ *   "worker not found" page, or whatever now lives at this name.
  */
 
 export type ServerConfig = {
   providers: { google: boolean }
 }
 
-const NONE: ServerConfig = { providers: { google: false } }
+export type ServerProbe =
+  | { status: 'ok'; config: ServerConfig }
+  | { status: 'offline' }
+  | { status: 'defunct' }
 
-export async function fetchServerConfig(
+export const APP_IDENTITY = 'mind-meld'
+
+export async function probeServer(
   fetchImpl: (url: string) => Promise<Response> = fetch,
-): Promise<ServerConfig> {
+): Promise<ServerProbe> {
+  let response: Response
   try {
-    const response = await fetchImpl('/api/config')
-    if (!response.ok) return NONE
-    const body: unknown = await response.json()
-    const providers = (body as { providers?: { google?: unknown } } | null)?.providers
-    return { providers: { google: providers?.google === true } }
+    response = await fetchImpl('/api/config')
   } catch {
-    return NONE
+    return { status: 'offline' }
   }
+  if (response.status >= 500) return { status: 'offline' }
+
+  let body: unknown
+  try {
+    body = await response.json()
+  } catch {
+    return { status: 'defunct' }
+  }
+  const record = body as { app?: unknown; providers?: { google?: unknown } } | null
+  if (record?.app !== APP_IDENTITY) return { status: 'defunct' }
+
+  return { status: 'ok', config: { providers: { google: record.providers?.google === true } } }
 }
